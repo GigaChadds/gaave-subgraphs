@@ -6,7 +6,7 @@ dataSources:
     name: Contract
     network: mumbai
     source:
-      address: "0x3462dd3c28F1548b1efe27EFc8DDB95326aB8e58"
+      address: "0x5174092a856D2d7B6E4471c36C85F25927dCF00C"
       abi: Contract
     mapping:
       kind: ethereum/events
