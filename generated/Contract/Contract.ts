@@ -10,21 +10,171 @@ import {
   BigInt
 } from "@graphprotocol/graph-ts";
 
-export class Upgraded extends ethereum.Event {
-  get params(): Upgraded__Params {
-    return new Upgraded__Params(this);
+export class CampaignProposed extends ethereum.Event {
+  get params(): CampaignProposed__Params {
+    return new CampaignProposed__Params(this);
   }
 }
 
-export class Upgraded__Params {
-  _event: Upgraded;
+export class CampaignProposed__Params {
+  _event: CampaignProposed;
 
-  constructor(event: Upgraded) {
+  constructor(event: CampaignProposed) {
     this._event = event;
   }
 
-  get implementation(): Address {
+  get _campaignAddress(): Address {
     return this._event.parameters[0].value.toAddress();
+  }
+
+  get _campaignId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get _thresholds(): Array<BigInt> {
+    return this._event.parameters[2].value.toBigIntArray();
+  }
+}
+
+export class ClaimBadge extends ethereum.Event {
+  get params(): ClaimBadge__Params {
+    return new ClaimBadge__Params(this);
+  }
+}
+
+export class ClaimBadge__Params {
+  _event: ClaimBadge;
+
+  constructor(event: ClaimBadge) {
+    this._event = event;
+  }
+
+  get _user(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get _id(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get _address(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+}
+
+export class Deposited extends ethereum.Event {
+  get params(): Deposited__Params {
+    return new Deposited__Params(this);
+  }
+}
+
+export class Deposited__Params {
+  _event: Deposited;
+
+  constructor(event: Deposited) {
+    this._event = event;
+  }
+
+  get _user(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get _tokenAddress(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get _amount(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+}
+
+export class DepositedETH extends ethereum.Event {
+  get params(): DepositedETH__Params {
+    return new DepositedETH__Params(this);
+  }
+}
+
+export class DepositedETH__Params {
+  _event: DepositedETH;
+
+  constructor(event: DepositedETH) {
+    this._event = event;
+  }
+
+  get _user(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get _amount(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+}
+
+export class Withdrawn extends ethereum.Event {
+  get params(): Withdrawn__Params {
+    return new Withdrawn__Params(this);
+  }
+}
+
+export class Withdrawn__Params {
+  _event: Withdrawn;
+
+  constructor(event: Withdrawn) {
+    this._event = event;
+  }
+
+  get _user(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get _tokenAddress(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get _amount(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+}
+
+export class WithdrawnETH extends ethereum.Event {
+  get params(): WithdrawnETH__Params {
+    return new WithdrawnETH__Params(this);
+  }
+}
+
+export class WithdrawnETH__Params {
+  _event: WithdrawnETH;
+
+  constructor(event: WithdrawnETH) {
+    this._event = event;
+  }
+
+  get _user(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get _amount(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+}
+
+export class Contract__userInfoResult {
+  value0: BigInt;
+  value1: BigInt;
+  value2: BigInt;
+
+  constructor(value0: BigInt, value1: BigInt, value2: BigInt) {
+    this.value0 = value0;
+    this.value1 = value1;
+    this.value2 = value2;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
+    return map;
   }
 }
 
@@ -33,14 +183,14 @@ export class Contract extends ethereum.SmartContract {
     return new Contract("Contract", address);
   }
 
-  admin(): Address {
-    let result = super.call("admin", "admin():(address)", []);
+  AAVE_POOL(): Address {
+    let result = super.call("AAVE_POOL", "AAVE_POOL():(address)", []);
 
     return result[0].toAddress();
   }
 
-  try_admin(): ethereum.CallResult<Address> {
-    let result = super.tryCall("admin", "admin():(address)", []);
+  try_AAVE_POOL(): ethereum.CallResult<Address> {
+    let result = super.tryCall("AAVE_POOL", "AAVE_POOL():(address)", []);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -48,23 +198,145 @@ export class Contract extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  implementation(): Address {
-    let result = super.call("implementation", "implementation():(address)", []);
+  WETH_GATEWAY(): Address {
+    let result = super.call("WETH_GATEWAY", "WETH_GATEWAY():(address)", []);
 
     return result[0].toAddress();
   }
 
-  try_implementation(): ethereum.CallResult<Address> {
+  try_WETH_GATEWAY(): ethereum.CallResult<Address> {
+    let result = super.tryCall("WETH_GATEWAY", "WETH_GATEWAY():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  claimBadge(): BigInt {
+    let result = super.call("claimBadge", "claimBadge():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_claimBadge(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("claimBadge", "claimBadge():(uint256)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getCampaignCount(): BigInt {
+    let result = super.call(
+      "getCampaignCount",
+      "getCampaignCount():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getCampaignCount(): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
-      "implementation",
-      "implementation():(address)",
+      "getCampaignCount",
+      "getCampaignCount():(uint256)",
       []
     );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
     let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getLatestPrice(_priceFeed: Address): BigInt {
+    let result = super.call(
+      "getLatestPrice",
+      "getLatestPrice(address):(uint256)",
+      [ethereum.Value.fromAddress(_priceFeed)]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getLatestPrice(_priceFeed: Address): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getLatestPrice",
+      "getLatestPrice(address):(uint256)",
+      [ethereum.Value.fromAddress(_priceFeed)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  tokenToPriceFeed(param0: Address): Address {
+    let result = super.call(
+      "tokenToPriceFeed",
+      "tokenToPriceFeed(address):(address)",
+      [ethereum.Value.fromAddress(param0)]
+    );
+
+    return result[0].toAddress();
+  }
+
+  try_tokenToPriceFeed(param0: Address): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "tokenToPriceFeed",
+      "tokenToPriceFeed(address):(address)",
+      [ethereum.Value.fromAddress(param0)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  userInfo(param0: BigInt, param1: Address): Contract__userInfoResult {
+    let result = super.call(
+      "userInfo",
+      "userInfo(uint256,address):(uint256,uint256,uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(param0),
+        ethereum.Value.fromAddress(param1)
+      ]
+    );
+
+    return new Contract__userInfoResult(
+      result[0].toBigInt(),
+      result[1].toBigInt(),
+      result[2].toBigInt()
+    );
+  }
+
+  try_userInfo(
+    param0: BigInt,
+    param1: Address
+  ): ethereum.CallResult<Contract__userInfoResult> {
+    let result = super.tryCall(
+      "userInfo",
+      "userInfo(uint256,address):(uint256,uint256,uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(param0),
+        ethereum.Value.fromAddress(param1)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new Contract__userInfoResult(
+        value[0].toBigInt(),
+        value[1].toBigInt(),
+        value[2].toBigInt()
+      )
+    );
   }
 }
 
@@ -85,8 +357,20 @@ export class ConstructorCall__Inputs {
     this._call = call;
   }
 
-  get admin(): Address {
+  get _WETH_GATEWAY(): Address {
     return this._call.inputValues[0].value.toAddress();
+  }
+
+  get _AAVE_POOL(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get _tokenAddresses(): Array<Address> {
+    return this._call.inputValues[2].value.toAddressArray();
+  }
+
+  get _priceFeeds(): Array<Address> {
+    return this._call.inputValues[3].value.toAddressArray();
   }
 }
 
@@ -98,186 +382,304 @@ export class ConstructorCall__Outputs {
   }
 }
 
-export class DefaultCall extends ethereum.Call {
-  get inputs(): DefaultCall__Inputs {
-    return new DefaultCall__Inputs(this);
+export class ClaimBadgeCall extends ethereum.Call {
+  get inputs(): ClaimBadgeCall__Inputs {
+    return new ClaimBadgeCall__Inputs(this);
   }
 
-  get outputs(): DefaultCall__Outputs {
-    return new DefaultCall__Outputs(this);
+  get outputs(): ClaimBadgeCall__Outputs {
+    return new ClaimBadgeCall__Outputs(this);
   }
 }
 
-export class DefaultCall__Inputs {
-  _call: DefaultCall;
+export class ClaimBadgeCall__Inputs {
+  _call: ClaimBadgeCall;
 
-  constructor(call: DefaultCall) {
+  constructor(call: ClaimBadgeCall) {
+    this._call = call;
+  }
+
+  get _campaignId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get _milestone(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+}
+
+export class ClaimBadgeCall__Outputs {
+  _call: ClaimBadgeCall;
+
+  constructor(call: ClaimBadgeCall) {
     this._call = call;
   }
 }
 
-export class DefaultCall__Outputs {
-  _call: DefaultCall;
+export class ClaimBadge1Call extends ethereum.Call {
+  get inputs(): ClaimBadge1Call__Inputs {
+    return new ClaimBadge1Call__Inputs(this);
+  }
 
-  constructor(call: DefaultCall) {
+  get outputs(): ClaimBadge1Call__Outputs {
+    return new ClaimBadge1Call__Outputs(this);
+  }
+}
+
+export class ClaimBadge1Call__Inputs {
+  _call: ClaimBadge1Call;
+
+  constructor(call: ClaimBadge1Call) {
     this._call = call;
   }
 }
 
-export class AdminCall extends ethereum.Call {
-  get inputs(): AdminCall__Inputs {
-    return new AdminCall__Inputs(this);
-  }
+export class ClaimBadge1Call__Outputs {
+  _call: ClaimBadge1Call;
 
-  get outputs(): AdminCall__Outputs {
-    return new AdminCall__Outputs(this);
-  }
-}
-
-export class AdminCall__Inputs {
-  _call: AdminCall;
-
-  constructor(call: AdminCall) {
-    this._call = call;
-  }
-}
-
-export class AdminCall__Outputs {
-  _call: AdminCall;
-
-  constructor(call: AdminCall) {
+  constructor(call: ClaimBadge1Call) {
     this._call = call;
   }
 
-  get value0(): Address {
-    return this._call.outputValues[0].value.toAddress();
+  get value0(): BigInt {
+    return this._call.outputValues[0].value.toBigInt();
   }
 }
 
-export class ImplementationCall extends ethereum.Call {
-  get inputs(): ImplementationCall__Inputs {
-    return new ImplementationCall__Inputs(this);
+export class DepositCall extends ethereum.Call {
+  get inputs(): DepositCall__Inputs {
+    return new DepositCall__Inputs(this);
   }
 
-  get outputs(): ImplementationCall__Outputs {
-    return new ImplementationCall__Outputs(this);
-  }
-}
-
-export class ImplementationCall__Inputs {
-  _call: ImplementationCall;
-
-  constructor(call: ImplementationCall) {
-    this._call = call;
+  get outputs(): DepositCall__Outputs {
+    return new DepositCall__Outputs(this);
   }
 }
 
-export class ImplementationCall__Outputs {
-  _call: ImplementationCall;
+export class DepositCall__Inputs {
+  _call: DepositCall;
 
-  constructor(call: ImplementationCall) {
+  constructor(call: DepositCall) {
     this._call = call;
   }
 
-  get value0(): Address {
-    return this._call.outputValues[0].value.toAddress();
-  }
-}
-
-export class InitializeCall extends ethereum.Call {
-  get inputs(): InitializeCall__Inputs {
-    return new InitializeCall__Inputs(this);
-  }
-
-  get outputs(): InitializeCall__Outputs {
-    return new InitializeCall__Outputs(this);
-  }
-}
-
-export class InitializeCall__Inputs {
-  _call: InitializeCall;
-
-  constructor(call: InitializeCall) {
-    this._call = call;
-  }
-
-  get _logic(): Address {
+  get _tokenAddress(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
 
-  get _data(): Bytes {
-    return this._call.inputValues[1].value.toBytes();
+  get _amount(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
   }
 }
 
-export class InitializeCall__Outputs {
-  _call: InitializeCall;
+export class DepositCall__Outputs {
+  _call: DepositCall;
 
-  constructor(call: InitializeCall) {
+  constructor(call: DepositCall) {
     this._call = call;
   }
 }
 
-export class UpgradeToCall extends ethereum.Call {
-  get inputs(): UpgradeToCall__Inputs {
-    return new UpgradeToCall__Inputs(this);
+export class Deposit1Call extends ethereum.Call {
+  get inputs(): Deposit1Call__Inputs {
+    return new Deposit1Call__Inputs(this);
   }
 
-  get outputs(): UpgradeToCall__Outputs {
-    return new UpgradeToCall__Outputs(this);
+  get outputs(): Deposit1Call__Outputs {
+    return new Deposit1Call__Outputs(this);
   }
 }
 
-export class UpgradeToCall__Inputs {
-  _call: UpgradeToCall;
+export class Deposit1Call__Inputs {
+  _call: Deposit1Call;
 
-  constructor(call: UpgradeToCall) {
+  constructor(call: Deposit1Call) {
     this._call = call;
   }
 
-  get newImplementation(): Address {
+  get _campaignId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get _tokenAddress(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get _amount(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+}
+
+export class Deposit1Call__Outputs {
+  _call: Deposit1Call;
+
+  constructor(call: Deposit1Call) {
+    this._call = call;
+  }
+}
+
+export class DepositETHCall extends ethereum.Call {
+  get inputs(): DepositETHCall__Inputs {
+    return new DepositETHCall__Inputs(this);
+  }
+
+  get outputs(): DepositETHCall__Outputs {
+    return new DepositETHCall__Outputs(this);
+  }
+}
+
+export class DepositETHCall__Inputs {
+  _call: DepositETHCall;
+
+  constructor(call: DepositETHCall) {
+    this._call = call;
+  }
+
+  get _amount(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class DepositETHCall__Outputs {
+  _call: DepositETHCall;
+
+  constructor(call: DepositETHCall) {
+    this._call = call;
+  }
+}
+
+export class ProposeCampaignCall extends ethereum.Call {
+  get inputs(): ProposeCampaignCall__Inputs {
+    return new ProposeCampaignCall__Inputs(this);
+  }
+
+  get outputs(): ProposeCampaignCall__Outputs {
+    return new ProposeCampaignCall__Outputs(this);
+  }
+}
+
+export class ProposeCampaignCall__Inputs {
+  _call: ProposeCampaignCall;
+
+  constructor(call: ProposeCampaignCall) {
+    this._call = call;
+  }
+
+  get _thresholds(): Array<BigInt> {
+    return this._call.inputValues[0].value.toBigIntArray();
+  }
+
+  get _cids(): Array<string> {
+    return this._call.inputValues[1].value.toStringArray();
+  }
+}
+
+export class ProposeCampaignCall__Outputs {
+  _call: ProposeCampaignCall;
+
+  constructor(call: ProposeCampaignCall) {
+    this._call = call;
+  }
+}
+
+export class WithdrawCall extends ethereum.Call {
+  get inputs(): WithdrawCall__Inputs {
+    return new WithdrawCall__Inputs(this);
+  }
+
+  get outputs(): WithdrawCall__Outputs {
+    return new WithdrawCall__Outputs(this);
+  }
+}
+
+export class WithdrawCall__Inputs {
+  _call: WithdrawCall;
+
+  constructor(call: WithdrawCall) {
+    this._call = call;
+  }
+
+  get _campaignId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get _tokenAddress(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get _amount(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+}
+
+export class WithdrawCall__Outputs {
+  _call: WithdrawCall;
+
+  constructor(call: WithdrawCall) {
+    this._call = call;
+  }
+}
+
+export class Withdraw1Call extends ethereum.Call {
+  get inputs(): Withdraw1Call__Inputs {
+    return new Withdraw1Call__Inputs(this);
+  }
+
+  get outputs(): Withdraw1Call__Outputs {
+    return new Withdraw1Call__Outputs(this);
+  }
+}
+
+export class Withdraw1Call__Inputs {
+  _call: Withdraw1Call;
+
+  constructor(call: Withdraw1Call) {
+    this._call = call;
+  }
+
+  get _tokenAddress(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
+
+  get _amount(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
 }
 
-export class UpgradeToCall__Outputs {
-  _call: UpgradeToCall;
+export class Withdraw1Call__Outputs {
+  _call: Withdraw1Call;
 
-  constructor(call: UpgradeToCall) {
+  constructor(call: Withdraw1Call) {
     this._call = call;
   }
 }
 
-export class UpgradeToAndCallCall extends ethereum.Call {
-  get inputs(): UpgradeToAndCallCall__Inputs {
-    return new UpgradeToAndCallCall__Inputs(this);
+export class WithdrawETHCall extends ethereum.Call {
+  get inputs(): WithdrawETHCall__Inputs {
+    return new WithdrawETHCall__Inputs(this);
   }
 
-  get outputs(): UpgradeToAndCallCall__Outputs {
-    return new UpgradeToAndCallCall__Outputs(this);
+  get outputs(): WithdrawETHCall__Outputs {
+    return new WithdrawETHCall__Outputs(this);
   }
 }
 
-export class UpgradeToAndCallCall__Inputs {
-  _call: UpgradeToAndCallCall;
+export class WithdrawETHCall__Inputs {
+  _call: WithdrawETHCall;
 
-  constructor(call: UpgradeToAndCallCall) {
+  constructor(call: WithdrawETHCall) {
     this._call = call;
   }
 
-  get newImplementation(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get data(): Bytes {
-    return this._call.inputValues[1].value.toBytes();
+  get _amount(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
   }
 }
 
-export class UpgradeToAndCallCall__Outputs {
-  _call: UpgradeToAndCallCall;
+export class WithdrawETHCall__Outputs {
+  _call: WithdrawETHCall;
 
-  constructor(call: UpgradeToAndCallCall) {
+  constructor(call: WithdrawETHCall) {
     this._call = call;
   }
 }
